@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-
 import {
   ApolloClient,
   InMemoryCache,
@@ -11,6 +10,7 @@ import {
   useQuery,
   gql
 } from "@apollo/client";
+
 
 
 const client = new ApolloClient({
@@ -30,10 +30,38 @@ client
   })
   .then(result => console.log(result));
 
+  const EXCHANGE_RATES = gql`
+  query GetExchangeRates {
+    rates(currency: "USD") {
+      currency
+      rate
+    }
+  }
+`;
+
+function ExchangeRates() {
+
+  const { loading, error, data } = useQuery(EXCHANGE_RATES);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+
+  return data.rates.map(({ currency, rate }) => (
+    <div key={currency}>
+      <p>
+        {currency}: {rate}
+      </p>
+    </div>
+  ));
+}
+
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <ApolloProvider client={client}>
+    <React.StrictMode>
+      <App />
+      <ExchangeRates/>
+    </React.StrictMode>
+  </ApolloProvider>,
   document.getElementById('root')
 );
 
